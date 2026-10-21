@@ -1,3 +1,19 @@
+CREATE TABLE "discipline" (
+    discipline_id INTEGER NOT NULL,
+    discipline_name TEXT NOT NULL,
+
+    CONSTRAINT discipline_pk
+        PRIMARY KEY (discipline_id),
+
+    CONSTRAINT discipline_id_check
+        CHECK (discipline_id > 0),
+
+    CONSTRAINT discipline_name_check
+        CHECK (
+            length(trim(discipline_name)) BETWEEN 1 AND 150
+        )
+);
+
 CREATE TABLE study_group (
     group_number TEXT NOT NULL,
     admission_year INTEGER,
@@ -52,28 +68,6 @@ CREATE TABLE teacher (
         )
 );
 
-CREATE TABLE discipline (
-    discipline_id INTEGER NOT NULL,
-    discipline_name TEXT NOT NULL,
-    teacher_id INTEGER NOT NULL,
-
-    CONSTRAINT discipline_pk
-        PRIMARY KEY (discipline_id),
-
-    CONSTRAINT discipline_id_check
-        CHECK (discipline_id > 0),
-
-    CONSTRAINT discipline_name_check
-        CHECK (
-            length(trim(discipline_name)) BETWEEN 1 AND 150
-        ),
-
-    CONSTRAINT discipline_teacher_fk
-        FOREIGN KEY (teacher_id)
-        REFERENCES teacher(teacher_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
 
 CREATE TABLE discipline_course (
     course_id INTEGER NOT NULL,
@@ -128,6 +122,28 @@ CREATE TABLE discipline_course (
         ON UPDATE CASCADE
 );
 
+
+CREATE TABLE discipline_teacher (
+    discipline_id INTEGER NOT NULL,
+    teacher_id INTEGER NOT NULL,
+
+    CONSTRAINT discipline_teacher_pk
+        PRIMARY KEY (discipline_id, teacher_id),
+
+    CONSTRAINT discipline_teacher_discipline_fk
+        FOREIGN KEY (discipline_id)
+        REFERENCES discipline(discipline_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT discipline_teacher_teacher_fk
+        FOREIGN KEY (teacher_id)
+        REFERENCES teacher(teacher_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
 CREATE TABLE lesson (
     lesson_id INTEGER NOT NULL,
     lesson_date TEXT,
@@ -179,6 +195,7 @@ CREATE TABLE lesson (
         ON UPDATE CASCADE
 );
 
+
 CREATE TABLE student (
     student_id INTEGER NOT NULL,
     surname TEXT NOT NULL,
@@ -229,34 +246,11 @@ CREATE TABLE student (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE student_discipline (
-    student_id INTEGER NOT NULL,
-    discipline_id INTEGER NOT NULL,
-
-    CONSTRAINT student_discipline_pk
-        PRIMARY KEY (
-            student_id,
-            discipline_id
-        ),
-
-    CONSTRAINT student_discipline_student_fk
-        FOREIGN KEY (student_id)
-        REFERENCES student(student_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT student_discipline_discipline_fk
-        FOREIGN KEY (discipline_id)
-        REFERENCES discipline(discipline_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
 
 CREATE TABLE control_result (
     result_id INTEGER NOT NULL,
     grade TEXT,
     control_type TEXT NOT NULL,
-
     control_date TEXT DEFAULT CURRENT_DATE,
 
     student_id INTEGER NOT NULL,
