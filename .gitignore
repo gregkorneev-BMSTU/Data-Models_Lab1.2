@@ -1,0 +1,24 @@
+# macOS / editor files
+.DS_Store
+._*
+*.swp
+*.swo
+*~
+*.tmp
+
+# SQLite transient files
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Local copies used for experiments and migration
+**/*_backup.sqlite
+**/*_old.sqlite
+**/*_test.sqlite
+**/*_new.sqlite
+
+# Microsoft Word temporary files
+~$*.docx
