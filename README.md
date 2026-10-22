@@ -1,52 +1,77 @@
-# Модели данных — ЛР № 1, часть 2
+# ЛР № 1, часть 2 — Модели данных
 
-Лабораторная работа по дисциплине **«Модели данных»** (МГТУ им. Н. Э. Баумана, ИУ5). Предметная область — **учебный процесс кафедры ИУ5**. СУБД: SQLite; приложение для работы с базой: DBeaver.
+**МГТУ им. Н. Э. Баумана, кафедра ИУ5.** Предметная область: учебный процесс кафедры. СУБД — **SQLite**, среда работы — **DBeaver**.
 
-## Основные файлы
+## Материалы для сдачи
 
-| Файл | Назначение |
+| Материал | Файл |
 | --- | --- |
-| [database/LR1_part2.sqlite](database/LR1_part2.sqlite) | Актуальная база данных SQLite — основной файл для проверки и сдачи |
-| [database/LR1_part2_structure.sql](database/LR1_part2_structure.sql) | Экспорт DDL: структура таблиц, ключи, ограничения и правила каскадных операций |
-| [models/infological_model.pdf](models/infological_model.pdf) | Актуальная инфологическая модель |
-| [models/ER.png](models/ER.png) | Актуальная ER-диаграмма, построенная в DBeaver |
-| [report/ЛР1.2_КорнеевГИ_ИУ5-34Б.docx](report/ЛР1.2_КорнеевГИ_ИУ5-34Б.docx) | Word-отчёт по лабораторной работе |
-| [assignment/ЛР1_часть_2_МД_2026.pdf](assignment/ЛР1_часть_2_МД_2026.pdf) | Методические требования / задание |
+| Отчёт (Word) | [report/ЛР1.2_КорнеевГИ_ИУ5-34Б.docx](report/ЛР1.2_КорнеевГИ_ИУ5-34Б.docx) |
+| Основная база | [database/LR1_part2.sqlite](database/LR1_part2.sqlite) |
+| SQL-структура (DDL) | [database/LR1_part2_structure.sql](database/LR1_part2_structure.sql) |
+| Инфологическая модель | [models/infological_model.pdf](models/infological_model.pdf) |
+| ER-диаграмма | [models/ER.png](models/ER.png) |
+| Задание и методические требования | [assignment/ЛР1_часть_2_МД_2026.pdf](assignment/ЛР1_часть_2_МД_2026.pdf) |
 
-## Структура репозитория
+## Структура проекта
 
 ```text
+Data-Models_Lab1.2/
 ├── README.md
 ├── .gitignore
-├── assignment/          # задание и методичка
-├── database/            # актуальная база SQLite и DDL
-├── models/              # инфологическая и ER-модели
-├── report/              # отчёт для сдачи
+├── assignment/                 # задание
+├── database/                   # основная база SQLite и SQL-DDL
+├── models/                     # инфологическая модель и ER-диаграмма
+├── report/                     # итоговый отчёт Word
 └── screenshots/
-    ├── constraints/    # проверки NOT NULL, UNIQUE, CHECK, DEFAULT
-    ├── verification/   # внешние ключи, состав таблиц, целостность
-    └── workflow/       # дополнительные кадры процесса работы
+    ├── constraints/            # проверки NOT NULL, UNIQUE, CHECK, DEFAULT
+    ├── verification/           # FOREIGN KEY, CASCADE и проверки целостности
+    └── workflow/               # вспомогательные скриншоты из DBeaver
 ```
 
-## Итоговая схема
+## Структура базы
 
-Актуальная база включает **8 таблиц**: `study_group`, `student`, `teacher`, `discipline`, `discipline_course`, `discipline_teacher`, `lesson`, `control_result`.
+В базе **8 таблиц**: `study_group`, `student`, `teacher`, `discipline`, `discipline_course`, `discipline_teacher`, `lesson`, `control_result`.
 
-- Связь M:M «Дисциплина — Преподаватель» реализована через `discipline_teacher`.
-- Прежняя таблица `student_discipline` в актуальной модели отсутствует.
-- В схеме объявлено **9 внешних ключей** с `ON UPDATE CASCADE` и `ON DELETE CASCADE`.
-- Определены ограничения `PRIMARY KEY`, `NOT NULL`, `CHECK`, `UNIQUE`, а для `control_result.control_date` — `DEFAULT CURRENT_DATE`.
+- Связь многие-ко-многим между дисциплинами и преподавателями представлена таблицей `discipline_teacher`.
+- Объявлено **9 внешних ключей**; для всех используются `ON UPDATE CASCADE` и `ON DELETE CASCADE`.
+- Присутствуют ограничения `PRIMARY KEY`, `NOT NULL`, `CHECK`, `UNIQUE`.
+- Для `control_result.control_date` установлено `DEFAULT CURRENT_DATE`.
 
-**Примечание:** `discipline_course` ссылается на `discipline` и `teacher` отдельными внешними ключами. Наличие соответствующей пары в `discipline_teacher` этими двумя ключами отдельно не проверяется.
+**Особенность схемы:** отдельные ссылки `discipline_course.discipline_id` и `discipline_course.teacher_id` гарантируют существование дисциплины и преподавателя, но не проверяют наличие их пары в `discipline_teacher`.
 
-## Проверка
+## Результаты проверок
 
-Итоговая база проходила проверки `PRAGMA foreign_key_check;` (нет нарушений) и `PRAGMA integrity_check;` (`ok`). Подтверждающие снимки находятся в [screenshots/verification](screenshots/verification). Часть скриншотов отдельных ограничений и каскадных операций получена на тестовой копии до изменения инфологической модели; итоговое состояние демонстрируется по актуальному файлу базы.
+- `NOT NULL`, `UNIQUE`, `CHECK`, `FOREIGN KEY` — вставки с нарушениями ограничений отклонялись.
+- `DEFAULT CURRENT_DATE` — дата подставлялась автоматически при отсутствии `control_date` в `INSERT`.
+- `ON UPDATE CASCADE` — изменение номера учебной группы обновляло связанные значения.
+- `ON DELETE CASCADE` — удаление студента приводило к удалению связанного результата контроля.
+- `PRAGMA foreign_keys;` возвращала `1` при включённом контроле для соединения.
+- `PRAGMA foreign_key_check;` не выявила нарушений ссылочной целостности.
+- `PRAGMA integrity_check;` вернула `ok`.
 
-Для работы в DBeaver откройте **`database/LR1_part2.sqlite`**. После переноса файла из корня прежний путь подключения нужно обновить.
+Проверки изменения и удаления записей выполнялись на **отдельной тестовой копии**, чтобы сохранить основную базу.
 
-SQL-файл `LR1_part2_structure.sql` содержит команды `CREATE TABLE`; не запускайте его поверх уже заполненной базы — это экспорт структуры, а не скрипт миграции.
+### Подтверждающие изображения
 
-## История изменений
+| Проверка | Файл |
+| --- | --- |
+| NOT NULL | [not_null.png](screenshots/constraints/not_null.png) |
+| UNIQUE | [unique.png](screenshots/constraints/unique.png) |
+| CHECK | [check.png](screenshots/constraints/check.png) |
+| DEFAULT | [default.png](screenshots/constraints/default.png) |
+| Ошибка FOREIGN KEY | [foreign_key_error.png](screenshots/verification/foreign_key_error.png) |
+| Девять правил CASCADE | [cascade_rules.png](screenshots/verification/cascade_rules.png) |
+| ON DELETE CASCADE | [on_delete_cascade.png](screenshots/verification/on_delete_cascade.png) |
+| Перечень таблиц | [final_tables.png](screenshots/verification/final_tables.png) |
+| Нарушения внешних ключей | [foreign_key_check.png](screenshots/verification/foreign_key_check.png) |
+| Внутренняя целостность | [integrity_check.png](screenshots/verification/integrity_check.png) |
 
-Устаревшие резервные и тестовые SQLite-файлы, пустая временная база и прежняя ER-диаграмма удалены из текущего дерева репозитория. При необходимости предыдущие версии восстанавливаются из истории Git.
+## Как открыть проект
+
+1. Открыть файл `database/LR1_part2.sqlite` в DBeaver через SQLite-подключение.
+2. Для просмотра DDL использовать `database/LR1_part2_structure.sql` (не выполнять `CREATE TABLE` поверх готовой базы).
+3. Для схемы открыть `models/ER.png`.
+4. Для сдачи использовать документ в папке `report/`.
+
+**Важно:** в SQLite контроль внешних ключей задаётся на уровне соединения командой `PRAGMA foreign_keys = ON;`. При работе в новом SQL-соединении следует проверить `PRAGMA foreign_keys;`.
